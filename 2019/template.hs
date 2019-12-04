@@ -93,19 +93,28 @@ flatten cnf
 -- 5 marks
 propUnits :: CNFRep -> (CNFRep, [Int])
 propUnits cnf
-  = (prop' cnf, singleList)
-    where singleList = [x | i <- indexList, x <- cnf !! i]
-          indexList = [i | i <- [0..(length cnf) - 1], length (cnf !! i) == 1]
-          prop' :: CNFRep -> CNFRep
-          prop' cnf'
-            | or (map ((<=1) . length) cnf') = prop' (filter (\x -> length x > 1) cnf)
-            | otherwise = cnf'
-            
-          
+  = prop' cnf []
+    where prop' :: CNFRep -> [Int] -> (CNFRep, [Int])
+          prop' cnf' slist
+            | indexList /= [] = (fst filtered, singleList ++ snd filtered)
+            | otherwise = (cnf', singleList)
+              where singleList = [x | i <- indexList, x <- cnf' !! i]
+                    indexList  = [i | i <- [0..(length cnf') - 1], length (cnf' !! i) == 1]
+                    filtered   = prop' (map (filter (\x -> not (elem x singleList || elem (-x) singleList))) withoutlenOne) slist
+                    withoutlenOne = filter (\x -> length x > 1) cnf'
+
 -- 4 marks
 dp :: CNFRep -> [[Int]]
-dp 
-    = undefined
+dp cnf
+  = dp' cnf
+      where propped = propUnits cnf
+            first = fst propped
+            second = snd propped
+            prop :: CNFRep -> (CNFRep, [Int])
+            prop cnf'
+              | elem [] cnf' = ([], [])
+              | otherwise = deleteBy 
+
 
 --------------------------------------------------------------------------
 -- Part IV
