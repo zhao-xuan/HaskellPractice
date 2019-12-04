@@ -105,15 +105,26 @@ propUnits cnf
 
 -- 4 marks
 dp :: CNFRep -> [[Int]]
-dp cnf
-  = dp' cnf
-      where propped = propUnits cnf
-            first = fst propped
-            second = snd propped
-            prop :: CNFRep -> (CNFRep, [Int])
-            prop cnf'
-              | elem [] cnf' = ([], [])
-              | otherwise = deleteBy 
+dp cnfrep = ((snd propped) ++ (dprec ([added1] : cnfrep))) : ((snd propped) ++ (dprec ([added2] : cnfrep))) : []
+      where propped = prop cnfrep
+            added1 = head (head (fst propped))
+            added2 = -added1
+
+prop :: CNFRep -> (CNFRep, [Int])
+prop cnf'
+  | elem [] cnf' = ([], [])
+  | otherwise = (filter (\x -> not (elem added x)) filtered, [added])
+      where newlist = [added] : cnf'
+            filtered = map (deleteBy (\x y -> x == -y) added) newlist
+            added = head (head cnf')
+dprec :: CNFRep -> [Int]
+dprec cnf''
+  | elem [] rest = []
+  | null rest = result
+  | otherwise  = result ++ dprec rest
+      where propped = prop cnf''
+            rest = fst propped
+            result = snd propped
 
 
 --------------------------------------------------------------------------
