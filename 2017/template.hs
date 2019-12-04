@@ -82,10 +82,11 @@ nodes (Node _ []) = 1
 nodes (Node n ((_, dt) : ss)) = nodes dt + nodes (Node n ss)
 
 evalTree :: DecisionTree -> Header -> Row -> AttValue
-evalTree Null
-evalTree (Leaf _)
-evalTree (Node _ [])
-evalTree (Node n ((_, dt) : ss))
+evalTree Null _ _ = ""
+evalTree (Leaf value) _ _ = value
+evalTree (Node n ((val, dt) : ss)) header row
+  | val == lookUpAtt n header row = evalTree dt header row
+  | otherwise = evalTree (Node n ss) header row
 
 --------------------------------------------------------------------
 -- PART III
@@ -103,12 +104,35 @@ nextAtt (header, _) (classifierName, _)
   = head (filter ((/= classifierName) . fst) header)
 
 partitionData :: DataSet -> Attribute -> Partition
-partitionData 
-  = undefined
+partitionData ds@(header, rows) attr@(att, vallist)
+  = zip (sort vallist) (zip (replicate 4 newHeader) newTrimmedDS)
+      where newHeader    = filter (\x -> (fst x) /= att) header
+            newTrimmedDS = map (\t -> (map (\\ vallist) t)) newDataset
+            newDataset   = groupBy (\x y -> (head x) == (head y)) (sort rows)
+
+--buildTree :: DataSet -> Attribute -> AttSelector -> DecisionTree 
+--buildTree ds@(header, rows) leafattr nextAtt
+--  | allSame vals = Leaf (head vals)
+--  | otherwise    = Node curr [(av, l) | av <- partAttVal, l <- ]
+--    where curr = fst (head header)
+--        nxt  = nextAtt ds curr
+--          part = partitionData ds curr
+--          partAttVal = map fst part
+--          partds     = map snd part
+--          vals = map (lookUpAtt (fst leafattr) header) rows
 
 buildTree :: DataSet -> Attribute -> AttSelector -> DecisionTree 
-buildTree 
-  = undefined
+buildTree (h, []) _ _
+  = Null
+buildTree ds@(h, rs) att@(an, avs) selector
+  | allSame vals
+    = Leaf (head vals)
+  | otherwise
+    = Node an' [(av', buildTree ds' att selector) | (av', ds') <- p]
+  where
+    vals             = map (lookUpAtt an h) rs
+    att'@(an', avs') = selector ds att
+    p                = partitionData ds att'
 
 --------------------------------------------------------------------
 -- PART IV
