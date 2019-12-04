@@ -78,11 +78,14 @@ buildFrequencyTable attr (header, rows) = freqList
 nodes :: DecisionTree -> Int
 nodes Null = 0
 nodes (Leaf _) = 1
-nodes (Node _ ((_, dt) : ss)) = 1 + length ss + nodes dt
+nodes (Node _ []) = 1
+nodes (Node n ((_, dt) : ss)) = nodes dt + nodes (Node n ss)
 
 evalTree :: DecisionTree -> Header -> Row -> AttValue
-evalTree 
-  = undefined
+evalTree Null
+evalTree (Leaf _)
+evalTree (Node _ [])
+evalTree (Node n ((_, dt) : ss))
 
 --------------------------------------------------------------------
 -- PART III
