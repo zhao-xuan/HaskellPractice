@@ -68,7 +68,7 @@ buildTree s
 
 longestRepeatedSubstring :: SuffixTree -> String
 longestRepeatedSubstring t
-  = head (lrs t)
+  = last (sortOn length (lrs t))
 
 lrs :: SuffixTree -> [String]
 lrs (Node [])                    = [[]]
