@@ -24,7 +24,7 @@ data Op = Add | Mul | Eq | Gtr
 lookUp :: (Eq a, Show a) => a -> [(a, b)] -> b
 lookUp i table
   = fromMaybe (error ("lookup failed on identifier: " ++ show i)) 
-              (lookup i table) 
+              (lookup i table)
 
 execFun :: Function -> [Int] -> State
 execFun (name, args, p) vs

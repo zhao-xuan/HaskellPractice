@@ -1,4 +1,4 @@
-import Data.List 
+import Data.List hiding (insert)
 
 type BinHeap a = [BinTree a]
 
@@ -39,8 +39,8 @@ mergeHeaps bh1 bh2
       where t  = head bh1
             t' = head bh2
 
-insert' :: Ord a => a -> BinHeap a -> BinHeap a
-insert' val bh = mergeHeaps [Node val 0 []] bh
+insert :: Ord a => a -> BinHeap a -> BinHeap a
+insert val bh = mergeHeaps [Node val 0 []] bh
 
 deleteMin :: Ord a => BinHeap a -> BinHeap a
 deleteMin bh = mergeHeaps c bh'
@@ -60,7 +60,7 @@ binSort :: Ord a => [a] -> [a]
 binSort [] = []
 binSort list = destruct (construct list)
     where construct [] = []
-          construct (s : ss) = insert' s (construct ss)
+          construct (s : ss) = insert s (construct ss)
           destruct [] = []
           destruct bh = (extractMin bh) : (destruct (deleteMin bh))
 
@@ -68,14 +68,26 @@ binSort list = destruct (construct list)
 -- PART III
 
 toBinary :: BinHeap a -> [Int]
-toBinary bh = replicate (maximum) 0
+toBinary bh = reverse (binary 0)
     where ranks = map rank bh
-          index = []
-          
+          binary :: Int -> [Int]
+          binary i
+            | i == maximum ranks = if elem i ranks then [1] else [0]
+            | otherwise          = if elem i ranks then 1 : b else 0 : b
+                where b = binary (i + 1)
 
+-- binarySum with reverse
 binarySum :: [Int] -> [Int] -> [Int]
-binarySum
-  = undefined
+binarySum a b
+  = reverse (binsum (reverse a) (reverse b) 0)
+      where binsum :: [Int] -> [Int] -> Int -> [Int]
+            binsum [] (t : tt) c = if t + c == 2 then tt ++ [0, 1] else (t + c) : tt
+            binsum (s : ss) [] c = if s + c == 2 then ss ++ [0, 1] else (s + c) : ss
+            binsum (s : ss) (t : tt) c
+              | s + t + c == 0 = 0 : (binsum ss tt 0)
+              | s + t + c == 1 = 1 : (binsum ss tt 0)
+              | s + t + c == 2 = 0 : (binsum ss tt 1)
+              | s + t + c == 3 = 1 : (binsum ss tt 1)
 
 ------------------------------------------------------
 -- Some sample trees...
