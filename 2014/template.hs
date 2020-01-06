@@ -110,8 +110,12 @@ makeNDA re
 make :: RE -> Int -> Int -> Int -> ([Transition], Int)
 make Null m n k     = ([(m, n, Eps)], m)
 make (Term c) m n k = ([(m, n, C c)], m)
-make (Seq r1 r2) m n k = (fst (make r1 m k m) ++ (fst (make r2 (k+1) n m)) ++ [(k, k+1, Eps)], m)
-make (Alt r1 r2) m n k = (fst (make r1 k (k+1) (k+1)) ++ fst (make r2 (k+2) (k+3) (k+2)) ++ [(m, k, Eps), (m, k+2, Eps), (k+1, n, Eps), (k+3, n, Eps)], m)
+make (Seq r1 r2) m n k = (ts1 ++ ts2 ++ [(k, k+1, Eps)], nxt2)
+  where (ts1, nxt1) = make r1 m k (k + 2)
+        (ts2, nxt2) = make r2 (k + 1) n nxt1
+make (Alt r1 r2) m n k = (ts1 ++ ts2 ++ [(m, k, Eps), (m, k+2, Eps), (k+1, n, Eps), (k+3, n, Eps)], nxt2)
+  where (ts1, nxt1) = make r1 k (k+1) (k+4)
+        (ts2, nxt2) = make r2 (k+2) (k+3) nxt1
 make (Rep r) m n k     = ([(m, k, Eps), (m, n, Eps), (k+1, n, Eps), (k+1, k, Eps)], m)
 
 
