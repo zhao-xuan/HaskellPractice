@@ -50,41 +50,53 @@ showRE' re
 
 lookUp :: Eq a => a -> [(a, b)] -> b
 --Pre: There is exactly one occurrence of the item being looked up.
-lookUp 
-  = undefined
+lookUp key ((k, v) : ss)
+  | key == k  = v
+  | otherwise = lookUp key ss
 
 simplify :: RE -> RE
-simplify
-  = undefined
+simplify (Plus re) = Seq re (Rep re)
+simplify (Opt re)  = Alt re Null
+simplify re = re
 
 --------------------------------------------------------
 -- Part II
 
 startState :: Automaton -> State
-startState
-  = undefined
+startState auto = start
+  where (start, _, _) = auto
+
 terminalStates :: Automaton -> [State]
-terminalStates
-  = undefined
+terminalStates auto = terminals
+  where (_, terminals, _) = auto
+
 transitions :: Automaton -> [Transition]
-transitions 
-  = undefined
+transitions auto = transitions
+  where (_, _, transitions) = auto
 
 isTerminal :: State -> Automaton -> Bool
-isTerminal 
-  = undefined
+isTerminal state auto = elem state (terminalStates auto)
 
 transitionsFrom :: State -> Automaton -> [Transition]
-transitionsFrom
-  = undefined
+transitionsFrom state auto = filter (\(from, _, _) -> state == from) (transitions auto)
 
 labels :: [Transition] -> [Label]
-labels 
-  = undefined
+labels trans = nub (map (\(_, _, x) -> x) transLabel)
+  where transLabel = filter (\(_, _, x) -> x /= Eps) trans
 
 accepts :: Automaton -> String -> Bool
-accepts 
-  = undefined
+accepts auto str
+  = accepts' (startState auto) str
+    where accepts' :: State -> String -> Bool
+          accepts' state str
+            | (isTerminal state auto) && null str = True
+            | otherwise = or (map (\x -> try str x) (transitionsFrom state auto))
+          try :: String -> Transition -> Bool
+          try str (_, to, Eps)  = accepts' to str
+          try [] (_, to, C c) = False
+          try (s : ss) (_, to, C c)
+            | s == c = accepts' to ss
+            | otherwise = False
 
 --------------------------------------------------------
 -- Part III
@@ -96,8 +108,12 @@ makeNDA re
     (transitions, k) = make (simplify re) 1 2 3
 
 make :: RE -> Int -> Int -> Int -> ([Transition], Int)
-make 
-  = undefined
+make Null m n k     = ([(m, n, Eps)], m)
+make (Term c) m n k = ([(m, n, C c)], m)
+make (Seq r1 r2) m n k = (fst (make r1 m k m) ++ (fst (make r2 (k+1) n m)) ++ [(k, k+1, Eps)], m)
+make (Alt r1 r2) m n k = (fst (make r1 k (k+1) (k+1)) ++ fst (make r2 (k+2) (k+3) (k+2)) ++ [(m, k, Eps), (m, k+2, Eps), (k+1, n, Eps), (k+3, n, Eps)], m)
+make (Rep r) m n k     = ([(m, k, Eps), (m, n, Eps), (k+1, n, Eps), (k+1, k, Eps)], m)
+
 
 --------------------------------------------------------
 -- Part IV
@@ -118,6 +134,7 @@ makeDA :: Automaton -> Automaton
 -- Pre: Any cycle in the NDA must include at least one non-Eps transition
 makeDA 
   = undefined
+
 
 --------------------------------------------------------
 -- Test cases
