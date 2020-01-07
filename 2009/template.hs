@@ -24,16 +24,16 @@ lookUp item pairs
 
 checkSat :: BDD -> Env -> Bool
 checkSat (id, nodes) env
-  | lookup id nodes == Nothing = id == 1
-  | lookUp index env           = checkSat (right, nodes) env
-  | otherwise                  = checkSat (left, nodes) env
+  | notElem id nodeList = id == 1
+  | lookUp index env = checkSat (right, nodes) env
+  | otherwise        = checkSat (left, nodes) env
      where (index, left, right) = lookUp id nodes
+           nodeList = map fst nodes
 
 sat :: BDD -> [[(Index, Bool)]]
 sat (id, nodes)
-  
-    where (index, left, right) = lookUp id nodes
-          check :: 
+  = undefined
+      where 
 
 ------------------------------------------------------
 -- PART II
