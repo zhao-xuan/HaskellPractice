@@ -39,10 +39,8 @@ vars = nub . sort . vars'
 -- 1 mark
 idMap :: Formula -> IdMap
 idMap formula
-  = idmap' varlist 1
-    where varlist = vars formula
-          idmap' [] _ = []
-          idmap' (v1 : rest) index = (v1, index) : (idmap' rest (index + 1))
+  = zip (vars formula) [1..]
+  
 --------------------------------------------------------------------------
 -- Part II
 
