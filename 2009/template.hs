@@ -31,20 +31,30 @@ checkSat (id, nodes) env
            nodeList = map fst nodes
 
 sat :: BDD -> [[(Index, Bool)]]
-sat (id, nodes)
-  = undefined
-      where 
+sat bdd@(id, nodes)
+  = filter (\x -> checkSat bdd x) possibles
+      where vars = (nub . sort) (map (\(_, (x, _, _)) -> x) nodes)
+            possibles = sequence (map (\x -> [(x, b) | b <- [True, False]]) vars)
 
 ------------------------------------------------------
 -- PART II
 
 simplify :: BExp -> BExp
-simplify 
-  = undefined
+simplify (Not (Prim b)) = Prim (not b)
+simplify (Or (Prim a) (Prim b)) = Prim (a || b)
+simplify (And (Prim a) (Prim b)) = Prim (a && b)
+simplify e = e
 
 restrict :: BExp -> Index -> Bool -> BExp
-restrict 
-  = undefined
+restrict (Prim b) index val = Prim b
+restrict (IdRef id) index val
+  | id == index = Prim val
+  | otherwise   = IdRef id
+restrict (Not e) index val = simplify (Not (restrict e index val))
+restrict (Or e e') index val
+  = simplify (Or (restrict e index val) (restrict e' index val))
+restrict (And e e') index val
+  = simplify (And (restrict e index val) (restrict e' index val))
 
 ------------------------------------------------------
 -- PART III
@@ -54,14 +64,21 @@ restrict
 -- The question suggests the following definition (in terms of buildBDD')
 -- but you are free to implement the function differently if you wish.
 buildBDD :: BExp -> [Index] -> BDD
-buildBDD 
-  = undefined
+buildBDD e xs
+  = buildBDD' e 2 xs
 
 -- Potential helper function for buildBDD which you are free
 -- to define/modify/ignore/delete/embed as you see fit.
 buildBDD' :: BExp -> NodeId -> [Index] -> BDD
-buildBDD' 
-  = undefined
+buildBDD' bexp nodeId []
+  | bexp == (Prim True) = (1, [])
+  | otherwise = (0, [])
+buildBDD' bexp nodeId (x : xs)
+  = (nodeId, (nodeId, (x, l, r)) : leftBuild ++ rightBuild)
+    where leftExp = restrict bexp x False
+          rightExp = restrict bexp x True
+          (l, leftBuild)  = buildBDD' leftExp (2*nodeId) xs
+          (r, rightBuild) = buildBDD' rightExp (2*nodeId+1) xs
 
 ------------------------------------------------------
 -- PART IV
