@@ -4,7 +4,7 @@
 
 ## Reporting errors
 
-For everyone's benefit (including the benefit of future students), please email me ([afd](mailto:xz1919@ic.ac.uk)) if you find any errors or better solution.
+For everyone's benefit (including the benefit of future students), please email me ([tomzhao](mailto:xz1919@ic.ac.uk)) if you find any errors or better solution.
 
 ## January Haskell Test
 [Here is the link for all the past paper](http://wp.doc.ic.ac.uk/ajf/haskell-tests/)
